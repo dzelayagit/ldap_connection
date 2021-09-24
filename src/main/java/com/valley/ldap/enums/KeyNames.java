@@ -29,7 +29,8 @@ public enum KeyNames {
     IP_ADDRESS("ipAddress", 16),
     DEVICE_NAME("deviceName", 17),
     SESSION_DURATION("sessionDuration", 19),
-    PROFILE("profile", 20);
+    PROFILE("profile", 20),
+    STATUS_SERVER("statusServer", 21);
 
     private KeyNames(String key, int position) {
         this.key = key;

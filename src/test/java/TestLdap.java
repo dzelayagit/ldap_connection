@@ -23,12 +23,12 @@ public class TestLdap {
     private Ldap ejbLdap = new Ldap();
 
     private String JDNI = "com.sun.jndi.ldap.LdapCtxFactory";
-    ;
+
     private String LDAP_HOST = "ldap://192.168.0.9:389/DC=SOFIA,DC=NET";
     private String DOMIMIO = "SOFIA";
     private String OU_MAIN = "MZ";
     private String OU_SECONDARY = "Usuarios";
-    ;
+
     private String user;
     private String pass;
     private String cn;
@@ -44,6 +44,7 @@ public class TestLdap {
         attributes.add(KeyNames.GIVEN_NAME.getKey());
         attributes.add(KeyNames.CN.getKey());
         attributes.add(KeyNames.TELEPHONE_NUMBER.getKey());
+        attributes.add(KeyNames.STATUS_SERVER.getKey());
 
     }
 
@@ -53,21 +54,21 @@ public class TestLdap {
         this.user = "rzelaya";
         this.pass = "Ieaa22$01";
 
-        this.userExpect = "Ricardo Zelaya";
+        this.userExpect = "200 OK";
         this.userCompare = this.ejbLdap.LDAPAuthentication(JDNI, LDAP_HOST, DOMIMIO, OU_MAIN, OU_SECONDARY, user, pass, attributes);
-
+        /*
         if (this.userCompare.size() > 0) {
 
             Iterator<Map.Entry<String, String>> entries = userCompare.entrySet().iterator();
+
             while (entries.hasNext()) {
                 Map.Entry<String, String> entry = entries.next();
-
             }
         } else {
             System.out.println("El usuario no esta registrado");
         }
-
-        assertEquals(userExpect, userCompare.get(KeyNames.CN.getKey()).toString());
+         */
+        assertEquals(userExpect, userCompare.get(KeyNames.STATUS_SERVER.getKey()).toString());
     }
 
     @Test
@@ -75,8 +76,9 @@ public class TestLdap {
 
         this.user = "lzelaya";
         this.pass = "Ieaa22$01";
-        this.userExpect = "Liliana Zelaya";
+        this.userExpect = "200 OK";
         this.userCompare = this.ejbLdap.LDAPAuthentication(JDNI, LDAP_HOST, DOMIMIO, OU_MAIN, OU_SECONDARY, user, pass, attributes);
+        /*
         if (this.userCompare.size() > 0) {
 
             Iterator<Map.Entry<String, String>> entries = userCompare.entrySet().iterator();
@@ -86,8 +88,91 @@ public class TestLdap {
         } else {
             System.out.println("El usuario no esta registrado");
         }
+         */
+        assertEquals(userExpect, userCompare.get(KeyNames.STATUS_SERVER.getKey()).toString());
+    }
 
-        assertEquals(userExpect, userCompare.get(KeyNames.CN.getKey()).toString());
+    @Test
+    public void testNombreUnknown() {
+
+        this.user = "jzelaya";
+        this.pass = "Ieaa22$01";
+        this.userExpect = "401 Unauthorized";
+        this.userCompare = this.ejbLdap.LDAPAuthentication(JDNI, LDAP_HOST, DOMIMIO, OU_MAIN, OU_SECONDARY, user, pass, attributes);
+        /*
+        if (this.userCompare.size() > 0) {
+
+           
+            Iterator<Map.Entry<String, String>> entries = userCompare.entrySet().iterator();
+            while (entries.hasNext()) {
+                Map.Entry<String, String> entry = entries.next();
+                
+                if (entry.getKey().equals(KeyNames.STATUS_SERVER.getKey()) ){
+                    System.out.println(entry.getKey() + "=" + entry.getValue());
+                }
+                
+            }
+            
+        } else {
+            System.out.println("El usuario no esta registrado");
+        }
+         */
+        assertEquals(userExpect, userCompare.get(KeyNames.STATUS_SERVER.getKey()).toString());
+    }
+
+    @Test
+    public void testNombre503() {
+
+        this.user = "jzelaya";
+        this.pass = "Ieaa22$01";
+        this.userExpect = "503 Service Unavailable:  No existe ninguna ruta hasta el «host» (Host unreachable)";
+        this.userCompare = this.ejbLdap.LDAPAuthentication(JDNI, LDAP_HOST, DOMIMIO, OU_MAIN, OU_SECONDARY, user, pass, attributes);
+        /*
+        if (this.userCompare.size() > 0) {
+
+            Iterator<Map.Entry<String, String>> entries = userCompare.entrySet().iterator();
+            while (entries.hasNext()) {
+                Map.Entry<String, String> entry = entries.next();
+
+                if (entry.getKey().equals(KeyNames.STATUS_SERVER.getKey())) {
+                    System.out.println(entry.getKey() + "=" + entry.getValue());
+                }
+
+            }
+        } else {
+            System.out.println("El usuario no esta registrado");
+        }
+         */
+
+        assertEquals(userExpect, userCompare.get(KeyNames.STATUS_SERVER.getKey()).toString());
+    }
+    
+    
+    @Test
+    public void testNombre500() {
+
+        this.user = "jzelaya";
+        this.pass = "Ieaa22$01";
+        this.userExpect = "500 Internal Server Error:";
+        this.userCompare = this.ejbLdap.LDAPAuthentication(JDNI, LDAP_HOST, DOMIMIO, OU_MAIN, OU_SECONDARY, user, pass, attributes);
+        /*
+        if (this.userCompare.size() > 0) {
+
+            Iterator<Map.Entry<String, String>> entries = userCompare.entrySet().iterator();
+            while (entries.hasNext()) {
+                Map.Entry<String, String> entry = entries.next();
+
+                if (entry.getKey().equals(KeyNames.STATUS_SERVER.getKey())) {
+                    System.out.println(entry.getKey() + "=" + entry.getValue());
+                }
+
+            }
+        } else {
+            System.out.println("El usuario no esta registrado");
+        }
+         */
+
+        assertEquals(userExpect, userCompare.get(KeyNames.STATUS_SERVER.getKey()).toString());
     }
 
 }

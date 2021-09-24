@@ -17,6 +17,8 @@ import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import com.valley.ejb.users.validateldap.interfaces.InterfaceLdap;
+import javax.naming.AuthenticationException;
+import javax.naming.CommunicationException;
 import javax.naming.Context;
 
 /**
@@ -37,6 +39,8 @@ public class Ldap implements InterfaceLdap {
         env.put(Context.SECURITY_PRINCIPAL, (DOMAIN + "\\" + user));
         env.put(Context.SECURITY_CREDENTIALS, pass);
 
+        String statusServer = "500 Internal Server Error";
+
         DirContext dirContext = null;
 
         try {
@@ -56,14 +60,13 @@ public class Ldap implements InterfaceLdap {
             controls.setReturningAttributes(requiredAttributes);
 
             users = dirContext.search("ou=" + OU_SECONDARY + ",ou= " + OU_MAIN, searchFilter, controls);
-         
+
             SearchResult searchResult = null;
             if (users != null) {
                 while (users.hasMore()) {
                     searchResult = (SearchResult) users.next();
                     Attributes attr = searchResult.getAttributes();
 
-                    
                     try {
                         if (attr.get(KeyNames.NAME.getKey()).toString().substring(0, attr.get(KeyNames.NAME.getKey()).toString().indexOf(":")).trim().equals(KeyNames.NAME.getKey())) {
                             useMap.put(KeyNames.NAME.getKey(), attr.get(KeyNames.NAME.getKey()).get(0).toString());
@@ -217,6 +220,8 @@ public class Ldap implements InterfaceLdap {
                     }
 
                 }
+                statusServer = new String("200 OK");
+                useMap.put(KeyNames.STATUS_SERVER.getKey(), statusServer);
 
                 //  useMap.put(KeyNames.IP_ADDRESS.getKey(), (String) this.gest.deviceInfo().get(DeviceInfo.IP_ADDRESS.getKey()));
                 //  useMap.put(KeyNames.DEVICE_NAME.getKey(), (String) this.gest.deviceInfo().get(DeviceInfo.DEVICE_NAME.getKey()));
@@ -229,15 +234,42 @@ public class Ldap implements InterfaceLdap {
 
             }
 
+        } catch (AuthenticationException e) {
+
+            for (Object att : attributes) {
+                useMap.put(att.toString(), "Unknown");
+            }
+            statusServer = new String("401 Unauthorized");
+            useMap.put(KeyNames.STATUS_SERVER.getKey(), statusServer);
+
+        } catch (CommunicationException e) {
+
+            for (Object att : attributes) {
+                useMap.put(att.toString(), "Unknown");
+            }
+            statusServer = new String("503 Service Unavailable: ").concat(
+                    e.getCause().toString().substring(e.getCause().toString().indexOf(":") + 1, e.getCause().toString().length())
+            );
+            useMap.put(KeyNames.STATUS_SERVER.getKey(), statusServer);
+
         } catch (NamingException e) {
 
             for (Object att : attributes) {
                 useMap.put(att.toString(), "Unknown");
             }
 
+            if (e.getCause() != null) {
+                statusServer = new String("500 Internal Server Error: ").concat(
+                        e.getCause().toString().substring(e.getCause().toString().indexOf(":") + 1, e.getCause().toString().length())
+                );
+            } else {
+                statusServer = "500 Internal Server Error: ";
+            }
+
+            useMap.put(KeyNames.STATUS_SERVER.getKey(), statusServer);
+
         }
 
-        //useMap.clear();
         return useMap;
 
     }
